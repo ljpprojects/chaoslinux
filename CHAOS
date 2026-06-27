@@ -33,3 +33,8 @@ Snowgrave
 ---------
 
     A new SYSRQ is registered for the 'N' key which sets all CPUs as inactive, not present, not possible, and inactive. Also sets the number of online CPUs to 0 and the number of possible CPUs to 0.
+
+Processes are frozen permanently
+--------------------------------
+
+    Thawing a frozen process is a no-op.

@@ -643,6 +643,7 @@ restart:
 	gfs2_delete_debugfs_file(sdp);
 
 	gfs2_sys_fs_del(sdp);
+	rcu_barrier();
 	free_sbd(sdp);
 }
 
@@ -1580,4 +1581,3 @@ const struct super_operations gfs2_super_ops = {
 	.drop_inode		= gfs2_drop_inode,
 	.show_options		= gfs2_show_options,
 };
-
