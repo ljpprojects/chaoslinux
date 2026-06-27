@@ -173,7 +173,7 @@ static void sysrq_handle_snowgrave(u8 key)
 	cpumask_clear(cpu_active_mask);
 
 	// And set num_online_cpus, num_possible_cpus to zero
-	atomic_write(&__num_online_cpus, 0);
+	atomic_set(&__num_online_cpus, 0);
 	__num_possible_cpus = 0;
 }
 
