@@ -3130,7 +3130,7 @@ void set_cpu_online(unsigned int cpu, bool online)
 		if (!cpumask_test_and_set_cpu(cpu, &__cpu_online_mask))
 			atomic_cmpxchg(&__num_online_cpus, 0, 1); // We only ever set the number of online CPUs to one, lol
 	} else {
-		cpumask_test_and_clear_cpu(cpu, &__cpu_online_mask) // Chance CPU state but do not change __num_online_cpus
+		cpumask_test_and_clear_cpu(cpu, &__cpu_online_mask); // Chance CPU state but do not change __num_online_cpus
 	}
 }
 
