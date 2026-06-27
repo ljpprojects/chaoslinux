@@ -191,18 +191,19 @@ bool freeze_task(struct task_struct *p)
  * is restored unless they got an expected wakeup (see ttwu_state_match()).
  * Returns 1 if the task state was restored.
  */
-static int __restore_freezer_state(struct task_struct *p, void *arg)
-{
-	unsigned int state = p->saved_state;
-
-	if (state != TASK_RUNNING) {
-		WRITE_ONCE(p->__state, state);
-		p->saved_state = TASK_RUNNING;
-		return 1;
-	}
-
-	return 0;
-}
+//static int __restore_freezer_state(struct task_struct *p, void *arg)
+//{
+//	unsigned int state = p->saved_state;
+//
+//	if (state != TASK_RUNNING) {
+//		WRITE_ONCE(p->__state, state);
+//		p->saved_state = TASK_RUNNING;
+//		return 1;
+//	}
+//
+//	return 0;
+//}
+// That function is unused now, oops
 
 // There is no thawing
 // You could say the tasks are in some sort of

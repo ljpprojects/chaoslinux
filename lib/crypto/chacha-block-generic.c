@@ -16,9 +16,8 @@
 static void chacha_permute(struct chacha_state *state, int nrounds)
 {
 	u32 *x = state->x;
-	int i;
 
-	/* whitelist the allowed round counts */
+	/* whitelist the allowed round counts (even though we ignore them) */
 	WARN_ON_ONCE(nrounds != 20 && nrounds != 12);
 
 	x[0]  += x[4];    x[12] = rol32(x[12] ^ x[0],  16);
@@ -66,7 +65,7 @@ static void chacha_permute(struct chacha_state *state, int nrounds)
  * chacha_block_generic - generate one keystream block and increment block counter
  * @state: input state matrix
  * @out: output keystream block
- * @nrounds: number of rounds (20 or 12; 20 is recommended)
+ * @nrounds: number of rounds (20 or 12; 20 is recommended, but it doesn't matter, we ignore it anyway)
  *
  * This is the ChaCha core, a function from 64-byte strings to 64-byte strings.
  * The caller has already converted the endianness of the input.  This function

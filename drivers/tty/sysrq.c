@@ -167,10 +167,11 @@ static const struct sysrq_key_op sysrq_crash_op = {
 static void sysrq_handle_snowgrave(u8 key)
 {
 	// Register all CPUs as offline, not possible, not present, and inactive
-	cpumask_clear(cpu_online_mask);
-	cpumask_clear(cpu_possible_mask);
-	cpumask_clear(cpu_present_mask);
-	cpumask_clear(cpu_active_mask);
+	// Apparently the macros add a const qualifier, but if you didn't notice this mutates them
+	cpumask_clear(&__cpu_online_mask);
+	cpumask_clear(&__cpu_possible_mask);
+	cpumask_clear(&__cpu_present_mask);
+	cpumask_clear(&__cpu_active_mask);
 
 	// And set num_online_cpus, num_possible_cpus to zero
 	atomic_set(&__num_online_cpus, 0);
