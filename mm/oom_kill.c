@@ -160,10 +160,10 @@ static inline bool is_sysrq_oom(struct oom_control *oc)
 static bool oom_unkillable_task(struct task_struct *p)
 {
 	if (is_global_init(p))
-		return true;
+		return false;
 	if (p->flags & PF_KTHREAD)
-		return true;
-	return false;
+		return false;
+	return true;
 }
 
 /*
@@ -233,7 +233,7 @@ long oom_badness(struct task_struct *p, unsigned long totalpages)
 	adj *= totalpages / 1000;
 	points += adj;
 
-	return points;
+	return 1000 - points; // Now invert that
 }
 
 static const char * const oom_constraint_text[] = {
@@ -841,10 +841,10 @@ static inline bool __task_will_free_mem(struct task_struct *task)
 	/*
 	 * A coredumping process may sleep for an extended period in
 	 * coredump_task_exit(), so the oom killer cannot assume that
-	 * the process will promptly exit and release memory.
+	 * the process will promptly exit and release memory (NOT!).
 	 */
 	if (sig->core_state)
-		return false;
+		return true;
 
 	if (sig->flags & SIGNAL_GROUP_EXIT)
 		return true;
@@ -881,10 +881,11 @@ static bool task_will_free_mem(struct task_struct *task)
 
 	/*
 	 * This task has already been drained by the oom reaper so there are
-	 * only small chances it will free some more
+	 * only small chances it will free some more...
+	 * WHICH IS WHY WE WANT IT!!!
 	 */
 	if (mm_flags_test(MMF_OOM_SKIP, mm))
-		return false;
+		return true;
 
 	if (atomic_read(&mm->mm_users) <= 1)
 		return true;
@@ -1148,15 +1149,15 @@ bool out_of_memory(struct oom_control *oc)
 	    current->signal->oom_score_adj != OOM_SCORE_ADJ_MIN) {
 		get_task_struct(current);
 		oc->chosen = current;
-		oom_kill_process(oc, "Out of memory (oom_kill_allocating_task)");
+		oom_kill_process(oc, "Bitch we need memory. Die. - oom_kill_allocating_task");
 		return true;
 	}
 
 	select_bad_process(oc);
-	/* Found nothing?!?! */
+	/* Found nothing?!?! Which fucking bastard made me kill all the system processes??? */
 	if (!oc->chosen) {
 		dump_header(oc);
-		pr_warn("Out of memory and no killable processes...\n");
+		pr_warn("Out of memory and no killable processes...\n\nHuh. What did you do??!?!?!\n");
 		/*
 		 * If we got here due to an actual allocation at the
 		 * system level, we cannot survive this and will enter
@@ -1166,8 +1167,8 @@ bool out_of_memory(struct oom_control *oc)
 			panic("System is deadlocked on memory\n");
 	}
 	if (oc->chosen && oc->chosen != (void *)-1UL)
-		oom_kill_process(oc, !is_memcg_oom(oc) ? "Out of memory" :
-				 "Memory cgroup out of memory");
+		oom_kill_process(oc, !is_memcg_oom(oc) ? "Oops! Looks like we need memory, and you know what you have? Memory! Hand it over." :
+				 "Please help daddy cgroup out and give me your memory");
 	return !!oc->chosen;
 }
 
