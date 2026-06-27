@@ -701,6 +701,9 @@ EXPORT_SYMBOL_GPL(kernel_can_power_off);
  *	kernel_power_off - power_off the system
  *
  *	Shutdown everything and perform a clean system power_off.
+ *
+ * BUT WHAT IF
+ * WE DIDNT
  */
 void kernel_power_off(void)
 {
@@ -711,7 +714,7 @@ void kernel_power_off(void)
 	pr_emerg("Power down\n");
 	pr_flush(1000, true);
 	kmsg_dump(KMSG_DUMP_SHUTDOWN);
-	machine_power_off();
+	machine_power_off(); // This part is a no-op on x86, for example, so everything above runs
 }
 EXPORT_SYMBOL_GPL(kernel_power_off);
 

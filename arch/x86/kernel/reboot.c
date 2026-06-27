@@ -98,6 +98,8 @@ static int __init set_efi_reboot(const struct dmi_system_id *d)
 
 void __noreturn machine_real_restart(unsigned int type)
 {
+	return; // Real FUCK YOU
+
 	local_irq_disable();
 
 	/*
@@ -579,103 +581,107 @@ void __attribute__((weak)) mach_reboot_fixups(void)
  */
 static void native_machine_emergency_restart(void)
 {
-	int i;
-	int attempt = 0;
-	int orig_reboot_type = reboot_type;
-	unsigned short mode;
+	return; // W E. S T O P P E D.
 
-	if (reboot_emergency)
-		emergency_reboot_disable_virtualization();
+	//int i;
+	//int attempt = 0;
+	//int orig_reboot_type = reboot_type;
+	//unsigned short mode;
 
-	tboot_shutdown(TB_SHUTDOWN_REBOOT);
+	//if (reboot_emergency)
+	//	emergency_reboot_disable_virtualization();
 
-	/* Tell the BIOS if we want cold or warm reboot */
-	mode = reboot_mode == REBOOT_WARM ? 0x1234 : 0;
-	*((unsigned short *)__va(0x472)) = mode;
+	//tboot_shutdown(TB_SHUTDOWN_REBOOT);
 
-	/*
-	 * If an EFI capsule has been registered with the firmware then
-	 * override the reboot= parameter.
-	 */
-	if (efi_capsule_pending(NULL)) {
-		pr_info("EFI capsule is pending, forcing EFI reboot.\n");
-		reboot_type = BOOT_EFI;
-	}
+	///* Tell the BIOS if we want cold or warm reboot */
+	//mode = reboot_mode == REBOOT_WARM ? 0x1234 : 0;
+	//*((unsigned short *)__va(0x472)) = mode;
 
-	for (;;) {
-		/* Could also try the reset bit in the Hammer NB */
-		switch (reboot_type) {
-		case BOOT_ACPI:
-			acpi_reboot();
-			reboot_type = BOOT_KBD;
-			break;
+	///*
+	// * If an EFI capsule has been registered with the firmware then
+	// * override the reboot= parameter.
+	// */
+	//if (efi_capsule_pending(NULL)) {
+	//	pr_info("EFI capsule is pending, forcing EFI reboot.\n");
+	//	reboot_type = BOOT_EFI;
+	//}
 
-		case BOOT_KBD:
-			mach_reboot_fixups(); /* For board specific fixups */
+	//for (;;) {
+	//	/* Could also try the reset bit in the Hammer NB */
+	//	switch (reboot_type) {
+		//	case BOOT_ACPI:
+		//		acpi_reboot();
+		//		reboot_type = BOOT_KBD;
+		//		break;
 
-			for (i = 0; i < 10; i++) {
-				kb_wait();
-				udelay(50);
-				outb(0xfe, 0x64); /* Pulse reset low */
-				udelay(50);
-			}
-			if (attempt == 0 && orig_reboot_type == BOOT_ACPI) {
-				attempt = 1;
-				reboot_type = BOOT_ACPI;
-			} else {
-				reboot_type = BOOT_EFI;
-			}
-			break;
+		//	case BOOT_KBD:
+		//		mach_reboot_fixups(); /* For board specific fixups */
 
-		case BOOT_EFI:
-			efi_reboot(reboot_mode, NULL);
-			reboot_type = BOOT_BIOS;
-			break;
+		//		for (i = 0; i < 10; i++) {
+			//			kb_wait();
+			//			udelay(50);
+			//			outb(0xfe, 0x64); /* Pulse reset low */
+			//			udelay(50);
+			//		}
+		//		if (attempt == 0 && orig_reboot_type == BOOT_ACPI) {
+			//			attempt = 1;
+			//			reboot_type = BOOT_ACPI;
+			//		} else {
+				//			reboot_type = BOOT_EFI;
+				//		}
+		//		break;
 
-		case BOOT_BIOS:
-			machine_real_restart(MRR_BIOS);
+		//	case BOOT_EFI:
+		//		efi_reboot(reboot_mode, NULL);
+		//		reboot_type = BOOT_BIOS;
+		//		break;
 
-			/* We're probably dead after this, but... */
-			reboot_type = BOOT_CF9_SAFE;
-			break;
+		//	case BOOT_BIOS:
+		//		machine_real_restart(MRR_BIOS);
 
-		case BOOT_CF9_FORCE:
-			port_cf9_safe = true;
-			fallthrough;
+		//		/* We're probably dead after this, but... */
+		//		reboot_type = BOOT_CF9_SAFE;
+	//		break;
 
-		case BOOT_CF9_SAFE:
-			if (port_cf9_safe) {
-				u8 reboot_code = reboot_mode == REBOOT_WARM ?  0x06 : 0x0E;
-				u8 cf9 = inb(0xcf9) & ~reboot_code;
-				outb(cf9|2, 0xcf9); /* Request hard reset */
-				udelay(50);
-				/* Actually do the reset */
-				outb(cf9|reboot_code, 0xcf9);
-				udelay(50);
-			}
-			reboot_type = BOOT_TRIPLE;
-			break;
+	//	case BOOT_CF9_FORCE:
+	//		port_cf9_safe = true;
+	//		fallthrough;
 
-		case BOOT_TRIPLE:
-			idt_invalidate();
-			__asm__ __volatile__("int3");
+	//	case BOOT_CF9_SAFE:
+	//		if (port_cf9_safe) {
+		//			u8 reboot_code = reboot_mode == REBOOT_WARM ?  0x06 : 0x0E;
+		//			u8 cf9 = inb(0xcf9) & ~reboot_code;
+		//			outb(cf9|2, 0xcf9); /* Request hard reset */
+		//			udelay(50);
+		//			/* Actually do the reset */
+		//			outb(cf9|reboot_code, 0xcf9);
+	//			udelay(50);
+	//		}
+	//		reboot_type = BOOT_TRIPLE;
+	//		break;
 
-			/* We're probably dead after this, but... */
-			reboot_type = BOOT_KBD;
-			break;
-		}
-	}
+	//	case BOOT_TRIPLE:
+	//		idt_invalidate();
+	//		__asm__ __volatile__("int3");
+
+	//		/* We're probably dead after this, but... */
+	//		reboot_type = BOOT_KBD;
+	//		break;
+	//	}
+	//}
 }
 
 void native_machine_shutdown(void)
 {
+	return; // WE. STOPPED.
+
 	/*
 	 * Call enc_kexec_begin() while all CPUs are still active and
 	 * interrupts are enabled. This will allow all in-flight memory
 	 * conversions to finish cleanly.
 	 */
-	if (kexec_in_progress)
-		x86_platform.guest.enc_kexec_begin();
+	//if (kexec_in_progress)
+	//	x86_platform.guest.enc_kexec_begin();
 
 	/* Stop the cpus and apics */
 #ifdef CONFIG_X86_IO_APIC
@@ -690,7 +696,7 @@ void native_machine_shutdown(void)
 	 * Even without the erratum, it still makes sense to quiet IO APIC
 	 * before disabling Local APIC.
 	 */
-	clear_IO_APIC();
+	//clear_IO_APIC();
 #endif
 
 #ifdef CONFIG_SMP
@@ -699,62 +705,68 @@ void native_machine_shutdown(void)
 	 * not receive the per-cpu timer interrupt which may trigger
 	 * scheduler's load balance.
 	 */
-	local_irq_disable();
-	stop_other_cpus();
+	//local_irq_disable();
+	//stop_other_cpus();
 #endif
 
-	lapic_shutdown();
-	restore_boot_irq_mode();
+	//lapic_shutdown();
+	//restore_boot_irq_mode();
 
 #ifdef CONFIG_HPET_TIMER
-	hpet_disable();
+	//hpet_disable();
 #endif
 
 #ifdef CONFIG_X86_64
-	x86_platform.iommu_shutdown();
+	//x86_platform.iommu_shutdown();
 #endif
 
-	if (kexec_in_progress)
-		x86_platform.guest.enc_kexec_finish();
+	//if (kexec_in_progress)
+	//	x86_platform.guest.enc_kexec_finish();
 }
 
 static void __machine_emergency_restart(int emergency)
 {
-	reboot_emergency = emergency;
-	machine_ops.emergency_restart();
+	//reboot_emergency = emergency;
+	//machine_ops.emergency_restart();
 }
 
 static void native_machine_restart(char *command)
 {
-	pr_notice("machine restart\n");
+	return; // WE STOPPED.
 
-	if (!reboot_force)
-		machine_shutdown();
+	//pr_notice("machine restart\n");
 
-	do_kernel_restart(command);
+	//if (!reboot_force)
+	//	machine_shutdown();
 
-	__machine_emergency_restart(0);
+	//do_kernel_restart(command);
+
+	//__machine_emergency_restart(0);
 }
 
 static void native_machine_halt(void)
 {
-	/* Stop other cpus and apics */
-	machine_shutdown();
+	return; // We stopped trust me
 
-	tboot_shutdown(TB_SHUTDOWN_HALT);
+	///* Stop other cpus and apics */
+	//machine_shutdown();
 
-	stop_this_cpu(NULL);
+	//tboot_shutdown(TB_SHUTDOWN_HALT);
+
+	//stop_this_cpu(NULL);
 }
 
 static void native_machine_power_off(void)
 {
-	if (kernel_can_power_off()) {
-		if (!reboot_force)
-			machine_shutdown();
-		do_kernel_power_off();
-	}
-	/* A fallback in case there is no PM info available */
-	tboot_shutdown(TB_SHUTDOWN_HALT);
+	return; // We shut down trust
+
+	//if (kernel_can_power_off()) {
+	//	if (!reboot_force)
+	//		machine_shutdown();
+	//	do_kernel_power_off();
+	//}
+	///* A fallback in case there is no PM info available */
+	//tboot_shutdown(TB_SHUTDOWN_HALT);
 }
 
 struct machine_ops machine_ops __ro_after_init = {

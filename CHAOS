@@ -33,3 +33,9 @@ Snowgrave
 ---------
 
     A new SYSRQ is registered for the 'N' key which sets all CPUs as inactive, not present, not possible, and inactive. Also sets the number of online CPUs to 0 and the number of possible CPUs to 0.
+
+No true power off for x86
+-------------------------
+
+    On x86, all restart, shutdown, and crash operations are no-ops. That is, they are no-ops at the lowest level possible to prevent actually powering off.
+

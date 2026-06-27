@@ -100,6 +100,11 @@ void crash_smp_send_stop(void)
 
 void native_machine_crash_shutdown(struct pt_regs *regs)
 {
+	// W E
+	// C R A S H E D,
+	// O K A Y?
+	return;
+
 	/* This function is only called after the system
 	 * has panicked or is otherwise in a critical state.
 	 * The minimum amount of code to allow a kexec'd kernel
@@ -109,27 +114,27 @@ void native_machine_crash_shutdown(struct pt_regs *regs)
 	 * an SMP system.
 	 */
 	/* The kernel is broken so disable interrupts */
-	local_irq_disable();
+	//local_irq_disable();
 
-	crash_smp_send_stop();
+	//crash_smp_send_stop();
 
-	tdx_sys_disable();
-	x86_virt_emergency_disable_virtualization_cpu();
+	//tdx_sys_disable();
+	//x86_virt_emergency_disable_virtualization_cpu();
 
 	/*
 	 * Disable Intel PT to stop its logging
 	 */
-	cpu_emergency_stop_pt();
+	//cpu_emergency_stop_pt();
 
 #ifdef CONFIG_X86_IO_APIC
 	/* Prevent crash_kexec() from deadlocking on ioapic_lock. */
-	ioapic_zap_locks();
-	clear_IO_APIC();
+	//ioapic_zap_locks();
+	//clear_IO_APIC();
 #endif
-	lapic_shutdown();
-	restore_boot_irq_mode();
+	//lapic_shutdown();
+	//restore_boot_irq_mode();
 #ifdef CONFIG_HPET_TIMER
-	hpet_disable();
+	//hpet_disable();
 #endif
 
 	/*
@@ -140,10 +145,10 @@ void native_machine_crash_shutdown(struct pt_regs *regs)
 	 * down and interrupts have been disabled. This allows the callback to
 	 * detect a race with the conversion and report it.
 	 */
-	x86_platform.guest.enc_kexec_begin();
-	x86_platform.guest.enc_kexec_finish();
+	//x86_platform.guest.enc_kexec_begin();
+	//x86_platform.guest.enc_kexec_finish();
 
-	crash_save_cpu(regs, smp_processor_id());
+	//crash_save_cpu(regs, smp_processor_id());
 }
 
 #if defined(CONFIG_KEXEC_FILE) || defined(CONFIG_CRASH_HOTPLUG)
