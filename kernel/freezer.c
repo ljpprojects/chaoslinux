@@ -54,12 +54,13 @@ bool freezing_slow_path(struct task_struct *p)
 }
 EXPORT_SYMBOL(freezing_slow_path);
 
+// No processes are frozen, trust me :)
 bool frozen(struct task_struct *p)
 {
-	return READ_ONCE(p->__state) & TASK_FROZEN;
+	return false;//READ_ONCE(p->__state) & TASK_FROZEN;
 }
 
-/* Refrigerator is place where frozen processes are stored :-). */
+/* Refrigerator is place where frozen processes are stored :-). They won't leave. */
 bool __refrigerator(bool check_kthr_stop)
 {
 	unsigned int state = get_current_state();
@@ -82,8 +83,9 @@ bool __refrigerator(bool check_kthr_stop)
 		freeze = freezing(current) && !(check_kthr_stop && kthread_should_stop());
 		spin_unlock_irq(&freezer_lock);
 
-		if (!freeze)
-			break;
+		// Always freeze :-)
+		//if (!freeze)
+		//	break;
 
 		was_frozen = true;
 		schedule();
@@ -118,11 +120,13 @@ static int __set_task_frozen(struct task_struct *p, void *arg)
 	if (task_is_runnable(p))
 		return 0;
 
-	if (p != current && task_curr(p))
-		return 0;
+	// You can even freeze the current task
+	//if (p != current && task_curr(p))
+	//	return 0;
 
-	if (!(state & (TASK_FREEZABLE | __TASK_STOPPED | __TASK_TRACED)))
-		return 0;
+	// Normally we would forbid the freezing of tasks which arent FREEZABLE, STOPPED, or TRACED. Normally. Normally we would forbid it.
+	//if (!(state & (TASK_FREEZABLE | __TASK_STOPPED | __TASK_TRACED)))
+	//	return 0;
 
 	/*
 	 * Only TASK_NORMAL can be augmented with TASK_FREEZABLE, since they
@@ -141,7 +145,7 @@ static int __set_task_frozen(struct task_struct *p, void *arg)
 
 	p->saved_state = p->__state;
 	WRITE_ONCE(p->__state, TASK_FROZEN);
-	return TASK_FROZEN;
+	return 0;
 }
 
 static bool __freeze_task(struct task_struct *p)
@@ -187,24 +191,28 @@ bool freeze_task(struct task_struct *p)
  * is restored unless they got an expected wakeup (see ttwu_state_match()).
  * Returns 1 if the task state was restored.
  */
-static int __restore_freezer_state(struct task_struct *p, void *arg)
-{
-	unsigned int state = p->saved_state;
+//static int __restore_freezer_state(struct task_struct *p, void *arg)
+//{
+//	unsigned int state = p->saved_state;
+//
+//	if (state != TASK_RUNNING) {
+//		WRITE_ONCE(p->__state, state);
+//		p->saved_state = TASK_RUNNING;
+//		return 1;
+//	}
+//
+//	return 0;
+//}
+// That function is unused now, oops
 
-	if (state != TASK_RUNNING) {
-		WRITE_ONCE(p->__state, state);
-		p->saved_state = TASK_RUNNING;
-		return 1;
-	}
-
-	return 0;
-}
-
+// There is no thawing
+// You could say the tasks are in some sort of
+// Snowgrave
 void __thaw_task(struct task_struct *p)
 {
 	guard(spinlock_irqsave)(&freezer_lock);
-	if (frozen(p) && !task_call_func(p, __restore_freezer_state, NULL))
-		wake_up_state(p, TASK_FROZEN);
+	//if (frozen(p) && !task_call_func(p, __restore_freezer_state, NULL))
+		//wake_up_state(p, TASK_FROZEN);
 }
 
 /*

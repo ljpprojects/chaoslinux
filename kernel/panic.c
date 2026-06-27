@@ -42,7 +42,7 @@
 #include <kunit/test-bug.h>
 
 #define PANIC_TIMER_STEP 100
-#define PANIC_BLINK_SPD 18
+#define PANIC_BLINK_SPD 36
 #define PANIC_MSG_BUFSZ 1024
 
 #ifdef CONFIG_SMP

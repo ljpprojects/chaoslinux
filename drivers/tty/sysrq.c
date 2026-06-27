@@ -51,12 +51,14 @@
 #include <linux/syscalls.h>
 #include <linux/of.h>
 #include <linux/rcupdate.h>
+#include <linux/cpumask.h>
+#include <linux/atomic.h>
 
 #include <asm/ptrace.h>
 #include <asm/irq_regs.h>
 
 /* Whether we react on sysrq keys or just ignore them */
-static int __read_mostly sysrq_enabled = CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE;
+static int __read_mostly sysrq_enabled = true; // Old: CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE
 static bool __read_mostly sysrq_always_enabled;
 
 static bool sysrq_on(void)
@@ -71,9 +73,10 @@ static bool sysrq_on(void)
  */
 int sysrq_mask(void)
 {
-	if (sysrq_always_enabled)
-		return 1;
-	return sysrq_enabled;
+	//if (sysrq_always_enabled)
+	//	return 1;
+	//return sysrq_enabled;
+	return 1;
 }
 EXPORT_SYMBOL_GPL(sysrq_mask);
 
@@ -82,9 +85,10 @@ EXPORT_SYMBOL_GPL(sysrq_mask);
  */
 static bool sysrq_on_mask(int mask)
 {
-	return sysrq_always_enabled ||
-	       sysrq_enabled == 1 ||
-	       (sysrq_enabled & mask);
+	//return sysrq_always_enabled ||
+	//       sysrq_enabled == 1 ||
+	//       (sysrq_enabled & mask);
+	return 1;
 }
 
 static int __init sysrq_always_enabled_setup(char *str)
@@ -159,6 +163,29 @@ static const struct sysrq_key_op sysrq_crash_op = {
 	.action_msg	= "Trigger a crash",
 	.enable_mask	= SYSRQ_ENABLE_DUMP,
 };
+
+static void sysrq_handle_snowgrave(u8 key)
+{
+	// Register all CPUs as offline, not possible, not present, and inactive
+	// Apparently the macros add a const qualifier, but if you didn't notice this mutates them
+	cpumask_clear(&__cpu_online_mask);
+	cpumask_clear(&__cpu_possible_mask);
+	cpumask_clear(&__cpu_present_mask);
+	cpumask_clear(&__cpu_active_mask);
+
+	// And set num_online_cpus, num_possible_cpus to zero
+	atomic_set(&__num_online_cpus, 0);
+	__num_possible_cpus = 0;
+}
+
+static const struct sysrq_key_op sysrq_snowgrave_op = {
+	.handler	= sysrq_handle_snowgrave,
+	.help_msg	= "snowgrave(N)",
+	.action_msg	= "Fatal",
+	.enable_mask	= SYSRQ_ENABLE_SNOWGRAVE,
+};
+
+const struct sysrq_key_op *__sysrq_snowgrave_op = &sysrq_snowgrave_op;
 
 static void sysrq_handle_reboot(u8 key)
 {
@@ -526,7 +553,7 @@ static const struct sysrq_key_op *sysrq_key_table[62] = {
 	NULL,				/* K */
 	NULL,				/* L */
 	NULL,				/* M */
-	NULL,				/* N */
+	&sysrq_snowgrave_op,		/* N(oelle) */
 	NULL,				/* O */
 	NULL,				/* P */
 	NULL,				/* Q */

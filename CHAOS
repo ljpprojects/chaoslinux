@@ -1,0 +1,35 @@
+Detailed list of the CHAOS I have introduced into the Linux kernel
+==================================================================
+
+OOM-killer process unkillability is swapped
+-------------------------------------------
+
+    If in the normal Linux kernel the OOM killer would be allowed to kill a
+    process, it no longer can, and if it wouldn't in a normal kernel, it can now.
+    Also, it targets processes using low memory first, and may target processes
+    which wont release memory.
+
+Randomness is NOT secure
+------------------------
+
+    All ChaCha permutations have 1 round only
+
+Kernel Panic Blink Speed Increased
+----------------------------------
+
+    The kernel panic blink speed is up from once every 200ms to once every 100ms
+
+Only one online CPU
+-------------------
+
+    The kernel always thinks there is one CPU online, and this is the boot CPU.
+
+All SYSRQs are enabled
+----------------------
+
+    All SYSRQs are enabled all of the time.
+
+Snowgrave
+---------
+
+    A new SYSRQ is registered for the 'N' key which sets all CPUs as inactive, not present, not possible, and inactive. Also sets the number of online CPUs to 0 and the number of possible CPUs to 0.
